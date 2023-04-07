@@ -6,36 +6,27 @@ import { useState } from "react";
 import Stripe from "stripe";
 import { stripe } from "../../lib/stripe";
 import { ImageContainer, ProductContainer, ProductDetails } from "../../styles/pages/product"
+import { useCart } from '../../hooks/useCart'
+
 interface ProductProps {
   product: {
     id: string
     name: string
     imageUrl: string
     price: string
+    priceNumber: number
     description: string
     defaultPriceId: string
   }
 }
 
 export default function Product({ product }: ProductProps) {
-  const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false);
+  const { addCart, checkIfAlreadyInCart } = useCart()
 
-  async function handleBuyButton() {
-    try {
-      setIsCreatingCheckoutSession(true);
+  function handleAddProduct() {
+    if (checkIfAlreadyInCart(product.id)) return
 
-      const response = await axios.post('/api/checkout', {
-        priceId: product.defaultPriceId,
-      })
-
-      const { checkoutUrl } = response.data;
-
-      window.location.href = checkoutUrl;
-    } catch (err) {
-      setIsCreatingCheckoutSession(false);
-
-      alert('Falha ao redirecionar ao checkout!')
-    }
+    addCart(product);
   }
 
   return (
@@ -53,8 +44,8 @@ export default function Product({ product }: ProductProps) {
 
           <p>{product.description}</p>
 
-          <button disabled={isCreatingCheckoutSession} onClick={handleBuyButton}>
-            Comprar agora
+          <button disabled={checkIfAlreadyInCart(product.id)} onClick={handleAddProduct}>
+            Colocar na sacola
           </button>
         </ProductDetails>
     </ProductContainer>
@@ -86,6 +77,7 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
           style: 'currency',
           currency: 'BRL'
         }).format(price.unit_amount! / 100),
+        priceNumber: price.unit_amount,
         description: product.description,
         defaultPriceId: price.id
       }

@@ -5,20 +5,24 @@ import { Container, Header } from "../styles/pages/app"
 
 import Image from "next/image"
 import Link from "next/link"
+import { Cart } from "@/components/Cart"
+import { CartContextProvider } from "@/contexts/CartContext"
 
 globalStyles()
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <Container>
-      <Link href='/'>
+    <CartContextProvider>
+      <Container>
         <Header>
-          <Image src={logoImg} alt="" />
+          <Link href='/'>
+            <Image src={logoImg} alt="" />
+          </Link>
+          <Cart />
         </Header>
-      </Link>
-    
-
-      <Component {...pageProps} />
-    </Container>
+        <Component {...pageProps} />
+        </Container>
+    </CartContextProvider>
+   
   )
 }
